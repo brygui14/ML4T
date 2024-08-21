@@ -1,21 +1,49 @@
 FROM mcr.microsoft.com/devcontainers/anaconda:1-3
 
-# Copy environment.yml (if found) to a temp location so we update the environment. Also
-# copy "noop.txt" so the COPY instruction does not fail if no environment.yml exists.
-COPY environment.yml environment.yml
-
-RUN conda env create -f environment.yml 
-
-RUN rm environment.yml
-
+# Set the working directory
 WORKDIR /workspaces/ML4T/
 
-ADD https://www.dropbox.com/scl/fi/puyw6qe5ybtiuhq4319r4/ML4T_2024Fall.zip?rlkey=mpfuugvfwz02losryev1m0kcv&st=mn3bji4f&dl=1 /tmp/zip/
+# Install unzip utility (if not already installed)
+RUN apt-get update && apt-get install -y unzip
 
-RUN sudo unzip /tmp/zip/ML4T_2024Fall.zip -d /tmp/zipextracted/
+# Copy environment.yml and zip files to the working directory
+COPY environment.yml ./
 
-RUN sudo mv /tmp/zipextracted/* /workspaces/ML4T
+# Create the conda environment from environment.yml
+RUN conda env create -f environment.yml 
 
+# Remove the environment.yml file if no longer needed
+RUN rm environment.yml
+
+
+
+# FROM mcr.microsoft.com/devcontainers/anaconda:1-3
+
+# # Set the working directory
+# WORKDIR /workspaces/ML4T/
+
+# # Copy environment.yml and other necessary files to the working directory
+# COPY environment.yml ./
+# COPY zips/ML4T_2024Fall.zip zips/assess_portfolio_2024Fall.zip ./zips/
+
+# # Create the conda environment from environment.yml
+# RUN conda env create -f environment.yml 
+
+# # Remove the environment.yml file if no longer needed
+# RUN rm environment.yml
+
+# WORKDIR /workspaces/ML4T/
+
+# ADD https://www.dropbox.com/scl/fi/puyw6qe5ybtiuhq4319r4/ML4T_2024Fall.zip?rlkey=mpfuugvfwz02losryev1m0kcv&st=mn3bji4f&dl=1 /tmp/zip/
+
+# # ADD https://www.dropbox.com/scl/fi/zlg1wiwgb86690nciw5b9/assess_portfolio_2024Fall.zip?rlkey=96y7ml6lgoy34fh1f9n6eb6et&st=2iqb6pt8&dl=1 /tmp/zip/
+
+# RUN sudo unzip /tmp/zip/ML4T_2024Fall.zip -d /tmp/zipextracted && sudo mv /tmp/zipextracted/* /workspaces/ML4T/
+
+# # RUN sudo unzip /tmp/zip/assess_portfolio_2024Fall.zip -d /tmp/zipextracted/
+
+
+# RUN sudo mv /tmp/zipextracted/* /workspaces/ML4T/
 
 # RUN unzip utilz.zip
 
