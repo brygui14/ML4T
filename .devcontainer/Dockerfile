@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y unzip
 COPY environment.yml ./
 
 # Create the conda environment from environment.yml
-RUN conda env create -f environment.yml 
+RUN conda env create -f environment.yml
 
 # Remove the environment.yml file if no longer needed
 RUN rm environment.yml
