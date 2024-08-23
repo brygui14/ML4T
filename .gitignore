@@ -1,0 +1,6 @@
+data/*
+grading/*
+util.py
+assess_portfolio/*
+__MACOSX/*
+__pycache__/*
