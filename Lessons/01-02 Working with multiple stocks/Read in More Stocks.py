@@ -2,6 +2,7 @@ from operator import index
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import util
 
 def run():
     # Define data range
