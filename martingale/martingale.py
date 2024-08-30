@@ -31,19 +31,7 @@ GT ID: 904061622 (replace with your GT ID)
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 win_prob = np.round((18 / 38), 6)  # 18 Black slots out of a total of 38
-
-
-def plot_data(df, title="Bets", xlabel="Bet #", ylabel="Winning"):
-    fig = plt.figure()
-    ax = fig.gca()
-    for i in range(df.shape[0] - 2):
-        plt.plot(df[i])
-    ax.set_xlim([0,100])
-    ax.set_ylim([-8000, 8000])
-    plt.show()
-
 
 def author():
     """
@@ -52,14 +40,12 @@ def author():
     """
     return "bindelicato3"  # replace tb34 with your Georgia Tech username.
 
-
 def gtid():
     """
     :return: The GT ID of the student
     :rtype: int
     """
     return 904061622  # replace with your GT ID number
-
 
 def get_spin_result(win_prob):
     """
@@ -105,9 +91,6 @@ def rouletteEpisode(episode, successive_bets=1000, winnings_threshold=80, bet_am
                 count += 1
     return episode
 
-
-
-
 def fig1():
     fig = plt.figure()
     ax = fig.gca()
@@ -125,7 +108,6 @@ def fig1():
     ax.set_title("Figure 1")
     plt.legend(loc=4)
     plt.savefig('images/figure_1.png')
-
 
 def fig2():
     fig = plt.figure()
@@ -228,46 +210,13 @@ def fig5():
     plt.legend(loc=4)
     plt.savefig('images/figure_5.png')
 
-def tmp():
-    fig = plt.figure()
-    ax = fig.gca()
-
-    episodes = np.zeros((10, 1001))
-
-    for i in range(episodes.shape[0]):
-        episodes[i] = rouletteEpisode(episodes[i], bankroll=30)
-        plt.plot(episodes[i], label=f"Episode: {str(i + 1)}")
-
-    ax.set_xlim([0, 300])
-    ax.set_ylim([-36, 100])
-    plt.xlabel("Bet #")
-    plt.ylabel("Episode Winnings $")
-    ax.set_title("Figure 1")
-    plt.legend(loc=4)
-    plt.show()
-
-
 def test_code():
     np.random.seed(gtid())  # do this only once
-
 
     fig1()
     fig2()
     fig4()
     fig5()
-
-    # tmp()
-    # rouletteEpisode()
-
-    #
-    #
-    # a = episodes.shape
-    #
-    # plot_data(episodes[0])
-    #
-    # print(episodes[0])  # test the roulette spin
-    # # add your code here to implement the experiments
-
 
 if __name__ == "__main__":
     test_code()
