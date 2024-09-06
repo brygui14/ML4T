@@ -33,6 +33,18 @@ import matplotlib.pyplot as plt
 
 win_prob = np.round((18 / 38), 6)  # 18 Black slots out of a total of 38
 
+TEXT_FILE = "p1_results.txt "
+
+def init_stat_file():
+    open(TEXT_FILE, 'w').close()
+
+def append_stats_to_file(input):
+    with open(TEXT_FILE, "a") as myfile:
+        myfile.write(input)
+
+def study_group():
+    return "bindelicato3"
+
 def author():
     """
     :return: The GT username of the student
@@ -61,7 +73,7 @@ def get_spin_result(win_prob):
         result = True
     return result
 
-def rouletteEpisode(episode, successive_bets=1000, winnings_threshold=80, bet_amount=1, bankroll=100000):
+def rouletteEpisode(episode, successive_bets=1000, winnings_threshold=80, bet_amount=1, bankroll=1000000000):
     episode_winnings = 0
     count = 0
     flag = False
@@ -74,7 +86,7 @@ def rouletteEpisode(episode, successive_bets=1000, winnings_threshold=80, bet_am
         bet = bet_amount
 
         while not won:
-            if count > successive_bets or episode_winnings > winnings_threshold or bankroll < 0:
+            if count > successive_bets or episode_winnings >= winnings_threshold or bankroll < 0:
                 episode[count:] = episode_winnings
                 flag = True
                 break
@@ -97,9 +109,14 @@ def fig1():
 
     episodes = np.zeros((10, 1001))
 
+    exp1_stats = "=================Experiment 1: Figure 1 Stats=================\n"
+
     for i in range(episodes.shape[0]):
         episodes[i] = rouletteEpisode(episodes[i])
         plt.plot(episodes[i], label=f"Episode: {str(i + 1)}")
+        exp1_stats += (f"Episode {i} 80$ winnings bet #: {np.where(episodes[i]==80)[0][0]}\n")
+
+    append_stats_to_file(exp1_stats)
 
     ax.set_xlim([0,300])
     ax.set_ylim([-256, 100])
@@ -113,22 +130,30 @@ def fig2():
     fig = plt.figure()
     ax = fig.gca()
 
-    episodes = np.zeros((1003, 1001))
+    episodes = np.zeros((1000, 1001))
 
-    min = episodes.shape[0] - 3
+    exp1_stats = "=================Experiment 1: Figure 2 Stats=================\n"
 
-    for i in range(episodes.shape[0] - 3):
+    for i in range(episodes.shape[0]):
         episodes[i] = rouletteEpisode(episodes[i])
 
-    episodes[min] = np.mean(episodes, axis=0)
-    episodes[min + 1] = np.mean(episodes, axis=0) + np.std(episodes, axis=0)
-    episodes[min + 2] = np.mean(episodes, axis=0) - np.std(episodes, axis=0)
+    mean = np.mean(episodes, axis=0)
+    std = np.std(episodes, axis=0)
 
-    plt.plot(episodes[min], label="Mean")
-    plt.plot(episodes[min + 1], label="Upper STD")
-    plt.plot(episodes[min + 2], label="Lower STD")
+    up_std = mean + std
+    low_std = mean - std
+
+    exp1_stats += f"Standard Deviation Maximum: {up_std.max()}\n"
+    exp1_stats += f"Standard Deviation Minimum: {low_std.min()}\n"
+    append_stats_to_file(exp1_stats)
+
+    plt.plot(mean, label="Mean")
+    plt.plot(mean + std, label="Upper STD")
+    plt.plot(mean - std, label="Lower STD")
+
     ax.set_xlim([0,300])
     ax.set_ylim([-256, 100])
+
     plt.xlabel("Bet #")
     plt.ylabel("Episode Winnings $")
     ax.set_title("Figure 2")
@@ -141,17 +166,25 @@ def fig3(episodes):
     fig = plt.figure()
     ax = fig.gca()
 
-    min = episodes.shape[0] - 3
+    exp1_stats = "=================Experiment 1: Figure 3 Stats=================\n"
 
-    episodes[min] = np.median(episodes, axis=0)
-    episodes[min + 1] = np.mean(episodes, axis=0) + np.std(episodes, axis=0)
-    episodes[min + 2] = np.mean(episodes, axis=0) - np.std(episodes, axis=0)
+    median = np.median(episodes, axis=0)
+    std = np.std(episodes, axis=0)
 
-    plt.plot(episodes[min], label="Median")
-    plt.plot(episodes[min + 1], label="Upper STD")
-    plt.plot(episodes[min + 2], label="Lower STD")
+    up_std = median + std
+    low_std = median - std
+
+    exp1_stats += f"Standard Deviation Maximum: {up_std.max()}\n"
+    exp1_stats += f"Standard Deviation Minimum: {low_std.min()}\n"
+    append_stats_to_file(exp1_stats)
+
+    plt.plot(median, label="Median")
+    plt.plot(median + std, label="Upper STD")
+    plt.plot(median - std, label="Lower STD")
+
     ax.set_xlim([0,300])
     ax.set_ylim([-256, 100])
+
     plt.xlabel("Bet #")
     plt.ylabel("Episode Winnings $")
     ax.set_title("Figure 3")
@@ -162,20 +195,33 @@ def fig4():
     fig = plt.figure()
     ax = fig.gca()
 
-    episodes = np.zeros((1003, 1001))
+    exp1_stats = "=================Experiment 2: Figure 4 Stats=================\n"
 
-    min = episodes.shape[0] - 3
+    episodes = np.zeros((1000, 1001))
 
-    for i in range(episodes.shape[0] - 3):
+    for i in range(episodes.shape[0]):
         episodes[i] = rouletteEpisode(episodes[i], bankroll=256)
 
-    episodes[min] = np.mean(episodes, axis=0)
-    episodes[min + 1] = np.mean(episodes, axis=0) + np.std(episodes, axis=0)
-    episodes[min + 2] = np.mean(episodes, axis=0) - np.std(episodes, axis=0)
+    mean = np.mean(episodes, axis=0)
+    std = np.std(episodes, axis=0)
 
-    plt.plot(episodes[min], label="Mean")
-    plt.plot(episodes[min + 1], label="Upper STD")
-    plt.plot(episodes[min + 2], label="Lower STD")
+    total_winnings = np.count_nonzero(episodes[:, -1] == 80)
+
+    exp1_stats += f"Number of Episodes with winnings = 80$: {total_winnings}\n"
+    exp1_stats += f"Estimated Probability of Winning 80$: {total_winnings/1000}\n"
+
+    up_std = mean + std
+    low_std = mean - std
+
+    exp1_stats += f"Standard Deviation Maximum: {up_std.max()}\n"
+    exp1_stats += f"Standard Deviation Minimum: {low_std.min()}\n"
+
+    append_stats_to_file(exp1_stats)
+
+    plt.plot(mean, label="Mean")
+    plt.plot(mean + std, label="Upper STD")
+    plt.plot(mean - std, label="Lower STD")
+
     ax.set_xlim([0,300])
     ax.set_ylim([-256, 100])
     plt.xlabel("Bet #")
@@ -184,24 +230,35 @@ def fig4():
     plt.legend(loc=4)
     plt.savefig('images/figure_4.png')
 
-def fig5():
+    fig5(episodes)
+
+def fig5(episodes):
     fig = plt.figure()
     ax = fig.gca()
 
-    episodes = np.zeros((1003, 1001))
+    exp1_stats = "=================Experiment 2: Figure 5 Stats=================\n"
 
-    min = episodes.shape[0] - 3
+    median = np.median(episodes, axis=0)
+    std = np.std(episodes, axis=0)
 
-    for i in range(episodes.shape[0] - 3):
-        episodes[i] = rouletteEpisode(episodes[i], bankroll=256)
+    total_winnings = np.count_nonzero(episodes[:, -1] == 80)
 
-    episodes[min] = np.median(episodes, axis=0)
-    episodes[min + 1] = np.mean(episodes, axis=0) + np.std(episodes, axis=0)
-    episodes[min + 2] = np.mean(episodes, axis=0) - np.std(episodes, axis=0)
+    exp1_stats += f"Number of Episodes with winnings = 80$: {total_winnings}\n"
+    exp1_stats += f"Estimated Probability of Winning 80$: {total_winnings / 1000}\n"
 
-    plt.plot(episodes[min], label="Median")
-    plt.plot(episodes[min + 1], label="Upper STD")
-    plt.plot(episodes[min + 2], label="Lower STD")
+    up_std = median + std
+    low_std = median - std
+
+    exp1_stats += f"Standard Deviation Maximum: {up_std.max()}\n"
+    exp1_stats += f"Standard Deviation Minimum: {low_std.min()}\n"
+
+    append_stats_to_file(exp1_stats)
+
+    plt.plot(median, label="Median")
+    plt.plot(median + std, label="Upper STD")
+    plt.plot(median - std, label="Lower STD")
+
+
     ax.set_xlim([0,300])
     ax.set_ylim([-256, 100])
     plt.xlabel("Bet #")
@@ -213,10 +270,11 @@ def fig5():
 def test_code():
     np.random.seed(gtid())  # do this only once
 
+    init_stat_file()
+
     fig1()
     fig2()
     fig4()
-    fig5()
 
 if __name__ == "__main__":
     test_code()
