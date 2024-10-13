@@ -1,5 +1,5 @@
 """
-A simple wrapper for Random Tree Learner.  (c) 2015 Tucker Balch
+A simple wrapper for Decision Tree Learner.  (c) 2015 Tucker Balch
 
 Copyright 2018, Georgia Institute of Technology (Georgia Tech)
 Atlanta, Georgia 30332
@@ -24,12 +24,11 @@ Student Name: Bryan Indelicato (replace with your name)
 GT User ID: bindelicato3 (replace with your User ID)
 GT ID: 904061622 (replace with your GT ID)
 """
+
 import numpy as np
-import random
+import numpy.ma as ma
 
-
-class RTLearner():
-
+class DTLearner():
     def __init__(self, leaf_size=1, verbose=False):
         '''
         Parameters
@@ -37,7 +36,7 @@ class RTLearner():
         verbose (bool)   - If “verbose” is True, your code can print out information for debugging.
                            If verbose = False your code should not generate ANY output. When we test your code, verbose will be False.
         '''
-        self.rt_ = None
+        self.dt_ = None
         self.leaf_size = leaf_size
         self.verbose = verbose
 
@@ -49,7 +48,7 @@ class RTLearner():
             data_x (numpy.ndarray) – A set of feature values used to train the learner
             data_y (numpy.ndarray) – The value we are attempting to predict given the X data
         """
-        self.rt_ = self.build_tree(data_x, data_y)
+        self.dt_ = self.build_tree(data_x, data_y)
 
     def author(self):
         """
@@ -77,33 +76,38 @@ class RTLearner():
             return np.array([["leaf", dataY[0], -1, -1]])
 
         else:
-            random_feature = np.random.randint(0, dataX.shape[1])
+            best_corr_i = self.getcorrI(dataX, dataY)
 
-            # rand_row1 = np.random.randint(0, dataX.shape[0])
-            # rand_row2 = np.random.randint(0, dataX.shape[0])
-            #
-            # while rand_row1 == rand_row2:
-            #     rand_row2 = np.random.randint(0, dataX.shape[0])
-            #
-            # random_value_1 = dataX[rand_row1, random_feature]
-            # random_value_2 = dataX[rand_row2, random_feature]
+            split = np.median(dataX[:,best_corr_i])
 
-            # split = (random_value_1 + random_value_2) / 2
-
-            split = np.median(dataX[:,random_feature], axis=0)
-
-            if split >= max(dataX[:, random_feature]):
+            if split >= max(dataX[:, best_corr_i]):
                 return np.array([["leaf", split, -1, -1]])
 
-            lefttree = self.build_tree(dataX[dataX[:, random_feature] <= split], dataY[dataX[:, random_feature] <= split])
-            righttree = self.build_tree(dataX[dataX[:, random_feature] > split], dataY[dataX[:, random_feature] > split])
-            root = np.array([[random_feature, split, 1, lefttree.shape[0] + 1]])
+            lefttree = self.build_tree(dataX[dataX[:, best_corr_i] <= split], dataY[dataX[:, best_corr_i] <= split])
+            righttree = self.build_tree(dataX[dataX[:, best_corr_i] > split], dataY[dataX[:, best_corr_i] > split])
+            root = np.array([[best_corr_i, split, 1, lefttree.shape[0] + 1]])
 
             decision_tree = np.concatenate((root,lefttree,righttree), axis=0)
             return decision_tree
 
+    def getcorrI(self,dataX, dataY):
+        idx = 0
+        max_corr = -1
+        for i in range(dataX.shape[1]):
+            corr = abs(ma.corrcoef(dataX[:, i], dataY)[0,1])
+
+            if corr > max_corr:
+                idx = i
+                max_corr = corr
+
+        return idx
+
+    def return_tree(self):
+        return self.dt_
+
     def query(self, points):
         """
+
         Estimate a set of test points given the model we built.
 
         Parameters
@@ -121,21 +125,21 @@ class RTLearner():
         for point in points:
             loc = 0
 
-            while self.rt_[loc, 0] != 'leaf':
-                idx = int(float(self.rt_[loc, 0]))
-                split = float(self.rt_[loc, 1])
+            while self.dt_[loc, 0] != 'leaf':
+                idx = int(float(self.dt_[loc, 0]))
+                split = float(self.dt_[loc, 1])
 
                 if point[idx] <= float(split):
-                    left = int(float(self.rt_[loc, 2]))
+                    left = int(float(self.dt_[loc, 2]))
                     loc = loc + left
                 else:
-                    right = int(float(self.rt_[loc, 3]))
+                    right = int(float(self.dt_[loc, 3]))
                     loc = loc + right
 
-            result = self.rt_[loc, 1]
+            result = self.dt_[loc, 1]
             res[i] = result
-            i+=1
+            i += 1
 
-        # print(res.shape)
-        # print('================================================================================')
+        if self.verbose == True:
+            print(res)
         return res
